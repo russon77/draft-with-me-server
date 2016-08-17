@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="jumbotron">
+    {% block prebody %}
+    {% endblock %}
+    <div class="row">
+        <div class="col-md-8">
+            <ul>
+                <li style="display: inline;">
+                    <img src="{{ cards[0] }}"
+                         width="200"
+                         height="303"
+                         id="card_zero">
+                </li>
+                <li style="display: inline;">
+                    <img src="{{ cards[1] }}"
+                         width="200"
+                         height="303"
+                         id="card_one">
+                </li>
+                <li style="display: inline;">
+                    <img src="{{ cards[2] }}"
+                         width="200"
+                         height="303"
+                         id="card_two">
+                </li>
+            </ul>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <img src="{{ hero }}"
+                         id="hero">
+                </div>
+                <div class="col-md-6">
+                    <div id="chartContainer" style="height: 400px; width: 320px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <p id="num_drafted">Number Drafted: {{ manas|length }}</p>
+            <ul id="drafted">
+                {% for item in drafted %}
+                <li data-toggle="tooltip"
+                    data-placement="left"
+                    data-html="true"
+                    title="<img src='{{ item.full }}'>">
+                    <img src="{{ item.mana }}"><img src="{{ item.card }}"><img src="{{ item.multiplicity }}">
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block postscript %}
+<!-- for chart capabilities -->
+<script src="{{ url_for('static', filename='js/canvasjs.min.js') }}"></script>
+
+<!-- websocket functionality -->
+<script src="{{ url_for('static', filename='js/socket.io-1.4.5.js') }}"></script>
+
+<!-- event processing -->
+<script src="{{ url_for('static', filename='js/test_processor.js') }}"></script>
+
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>
+
+{% block postscriptcontents %}
+{% endblock %}
+
+{% endblock %}

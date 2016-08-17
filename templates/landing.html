@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}
+| Landing Page
+{% endblock %}
+
+{% block body %}
+<div class="jumbotron">
+    <h2>
+        Draft With Me
+    </h2>
+    <p>
+        Draft With Me is a method for "streaming" your arena drafts to friends, without the use of screen sharing.
+        Simply share the link that the app provides, and go! You can have as many people as you want view your draft.
+    </p>
+    <p>
+        <a href="{{ url_for('serve_example') }}">View the example</a>
+        OR
+        <a href="{{ url_for('serve_download_page') }}">Download the client!</a>
+    </p>
+    <p>
+        Copyright Tristan Kernan, <a href="https://en.wikipedia.org/wiki/MIT_License">licensed MIT</a>
+    </p>
+</div>
+{% endblock %}

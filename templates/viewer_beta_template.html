@@ -1,0 +1,19 @@
+{% extends "viewer_skeleton.html" %}
+
+{% block title %}
+| Viewer
+{% endblock %}
+
+{% block postscriptcontents %}
+<!-- startup script -->
+<script type="application/javascript">
+    setupWebSocket("{{ _id }}");
+
+    initChart();
+
+    /*
+     {{ manas }}
+     */
+    updateChart({{ manas }});
+</script>
+{% endblock %}

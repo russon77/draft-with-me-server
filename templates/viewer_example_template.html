@@ -1,0 +1,73 @@
+{% extends "viewer_skeleton.html" %}
+
+{% block title %}
+| Example
+{% endblock %}
+
+{% block prebody %}
+<p>
+    <a id="viewer_link" target="_blank" href="">Check it out in a new tab!</a>
+</p>
+{% endblock %}
+
+{% block postscriptcontents %}
+<!-- includes window.KnuthShuffle() function -->
+<script src="{{ url_for('static', filename='js/knuth_shuffle.js') }}"></script>
+
+<script type="application/javascript">
+    // yes, you can write your own examples here! go ahead and give it a shot. write the test using the language below,
+    // and run it with processTests()!
+
+    var cards = [
+        "OG_147",
+        "AT_083",
+        "LOE_003",
+        "AT_089",
+        "GVG_103",
+        "OG_207",
+        "OG_153",
+        "AT_007",
+        "OG_083",
+        "EX1_562",
+        "EX1_020",
+        "CS2_182",
+        "FP1_001",
+        "CS2_189",
+        "OG_145",
+        "OG_323",
+        "AT_001",
+        "LOE_002",
+        "OG_272",
+        "EX1_594",
+        "EX1_048",
+        "CS2_029",
+        "CS2_032",
+        "GVG_064",
+        "EX1_277",
+        "EX1_608",
+        "CS2_023",
+        "OG_150",
+        "NEW1_041"
+    ];
+
+    var test = [
+        "init",
+        "hero mage  # set the hero to mage",
+
+    ];
+
+    var drafted = [];
+
+    for (var i = 0; i < 30; i++) {
+        window.knuthShuffle(cards);
+        test.push("cards " + cards[0] + "," + cards[1] + "," + cards[2]);
+
+        // select the 0th card to add to our drafted array
+        drafted.push(cards[0]);
+
+        test.push("drafted " + drafted.join());
+    }
+
+    processTests(test, 1100);
+</script>
+{% endblock %}
