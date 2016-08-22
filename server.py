@@ -58,7 +58,7 @@ def create_new_session_in_db(session_id):
 
 
 def update_session_cards_in_db(session_id, auth_token, new_cards):
-    g.collection.find_and_modify(
+    return None is not g.collection.find_and_modify(
         query={
             "session_id": session_id,
             "auth_token": auth_token,
@@ -76,7 +76,7 @@ def update_session_drafted_in_db(session_id, auth_token, new_drafted):
     if len(new_drafted) > 30:
         raise ValueError
 
-    g.collection.find_and_modify(
+    return None is not g.collection.find_and_modify(
         query={
             "session_id": session_id,
             "auth_token": auth_token,
@@ -97,7 +97,7 @@ def update_session_hero_in_db(session_id, auth_token, new_hero):
     if new_hero not in VALID_HERO_IDS:
         raise ValueError
 
-    g.collection.find_and_modify(
+    return None is not g.collection.find_and_modify(
         query={
             "session_id": session_id,
             "auth_token": auth_token,
@@ -163,7 +163,7 @@ def get_url_for_mana(mana):
 
 
 def get_url_for_multiplicity(multiplicity):
-    if multiplicity in range(0, 6):
+    if multiplicity in range(0, 10):
         return "https://s3.amazonaws.com/draftwithme/multiplicity/%d.png" % multiplicity
 
     return "https://s3.amazonaws.com/draftwithme/multiplicity/blank_mult.png"
@@ -376,14 +376,20 @@ def update_session_cards(_id):
     auth_token = "".join(ch for ch in data["auth_token"] if ch.isalnum())
 
     # update our db entry
-    update_session_cards_in_db(_id, auth_token, data["cards"])
+    success = update_session_cards_in_db(_id, auth_token, data["cards"])
+
+    if not success:
+        return jsonify({
+            "success": False,
+            "error": "Database update failed."
+        })
 
     # emit an update message to everyone in the room
     # we send an array of links to the images, so that the frontend does not have to be able to convert a card id
     # into a url. this allows us to change where the pictures are stored without having to modify the front-end
     socketio.emit("cards_updated",
                   {
-                      "cards": [get_url_for_card_id(card) for card in data["cards"]]
+                      "cards": data["cards"]
                   },
                   room=_id)
 
@@ -415,14 +421,20 @@ def update_session_hero(_id):
     auth_token = "".join(ch for ch in data["auth_token"] if ch.isalnum())
 
     # update our db entry
-    update_session_hero_in_db(_id, auth_token, data["hero"])
+    success = update_session_hero_in_db(_id, auth_token, data["hero"])
+
+    if not success:
+        return jsonify({
+            "success": False,
+            "error": "Database update failed."
+        })
 
     # emit an update message to everyone in the room
     # we send the link to the image, so that the frontend does not have to be able to convert a card id
     # into a url. this allows us to change where the pictures are stored without having to modify the front-end
     socketio.emit("hero_updated",
                   {
-                      "hero": get_url_for_hero(data["hero"])
+                      "hero": data["hero"]
                   },
                   room=_id)
 
@@ -456,7 +468,13 @@ def update_session_drafted(_id):
     # update our db entry
     drafted = sort_cards(data["drafted"])
     drafted_as_list_of_card_ids = data["drafted"]
-    update_session_drafted_in_db(_id, auth_token, drafted_as_list_of_card_ids)
+    success = update_session_drafted_in_db(_id, auth_token, drafted_as_list_of_card_ids)
+
+    if not success:
+        return jsonify({
+            "success": False,
+            "error": "Database update failed."
+        })
 
     # front end expects a list of objects (already sorted by mana and name) comprised of three URLs each
     drafted_url_objects = []
@@ -476,7 +494,7 @@ def update_session_drafted(_id):
     # into a url. this allows us to change where the pictures are stored without having to modify the front-end
     socketio.emit("drafted_updated",
                   {
-                      "drafted": drafted_url_objects,
+                      "drafted": drafted,
                       "manas": manas
                   },
                   room=_id)
@@ -530,8 +548,6 @@ def on_join(data):
     room = data["id"]
     join_room(room)
 
-    print("User has joined room " + room)
-
 
 if __name__ == '__main__':
-    socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
+    socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)

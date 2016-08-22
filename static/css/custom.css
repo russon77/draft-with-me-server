@@ -1,0 +1,11 @@
+.tooltip {
+    background-color: transparent;
+}
+
+.tooltip.in {
+    background-color: transparent;
+}
+
+.tooltip-inner {
+    background-color: transparent;
+}

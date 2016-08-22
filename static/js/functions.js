@@ -59,14 +59,14 @@ function processTests(action_list, delay) {
 
                 action.data = action.data.split(",");
                 updateServer(session_data.session_id, session_data.auth_token, action.data, action.type)
-                    .then(() => processing = false);
+                    .then(function() {processing = false;});
 
                 break;
             case "hero":
                 console.log("Performing update to " + action.type);
 
                 updateServer(session_data.session_id, session_data.auth_token, action.data, action.type)
-                    .then(() => processing = false);
+                    .then(function() {processing = false;});
 
                 break;
         }
@@ -178,11 +178,11 @@ function setupWebSocket(session_id) {
             return false;
 
         var card_element_ids = ["card_zero", "card_one", "card_two"];
+        var card_urls = data["cards"].map(function(m) {return get_url_for_card_id(m)});
 
         for (var i = 0; i < 3; i++) {
-            updateImage(card_element_ids[i], data["cards"][i]);
+            updateImage(card_element_ids[i], card_urls[i]);
         }
-
     });
 
     socket.on('hero_updated', function (data) {
@@ -193,7 +193,7 @@ function setupWebSocket(session_id) {
         if (false === ("hero" in data))
             return false;
 
-        updateImage("hero", data["hero"]);
+        updateImage("hero", get_url_for_hero(data["hero"]));
     });
 
     socket.on('drafted_updated', function (data) {
@@ -234,7 +234,12 @@ function setupWebSocket(session_id) {
         }
 
         // decompose our input into a new list
-        var index, li, element, keys = ["mana", "card", "multiplicity"];
+        var index, li, element,
+            keys = [
+                ["mana", get_url_for_mana],
+                ["card", get_url_for_card_bar],
+                ["multiplicity", get_url_for_multiplicity]
+            ];
 
         for (var i = 0; i < data["drafted"].length; i++) {
             li = document.createElement("li");
@@ -242,11 +247,11 @@ function setupWebSocket(session_id) {
             li.setAttribute("data-toggle", "tooltip");
             li.setAttribute("data-placement", "left");
             li.setAttribute("data-html", "true");
-            li.setAttribute("title", "<img src='" + data["drafted"][i]["full"] + "'>");
+            li.setAttribute("title", "<img src='" + get_url_for_card_id(data["drafted"][i]["card"]) + "'>");
 
             for (index of keys) {
                 element = document.createElement("img");
-                element.setAttribute("src", data["drafted"][i][index]);
+                element.setAttribute("src", index[1](data["drafted"][i][index[0]]));
 
                 li.appendChild(element);
             }
@@ -314,4 +319,50 @@ function updateChart(manas) {
     };
 
     chart.render();
+}
+
+/**
+ * URL helper functions
+ */
+
+const VALID_HERO_IDS = [
+        "druid", "hunter", "mage", "priest", "shaman", "thief", "paladin", "warlock", "warrior"
+    ];
+
+function get_url_for_card_id(card_id) {
+    if (card_id)
+        return "https://s3.amazonaws.com/draftwithme/full_cards/" + card_id + ".png";
+
+    return "https://s3.amazonaws.com/draftwithme/full_cards/blank_card.png";
+}
+
+
+function get_url_for_hero(hero_id)
+{
+    if (VALID_HERO_IDS.indexOf(hero_id) !== -1)
+        return "https://s3.amazonaws.com/draftwithme/heroes/" + hero_id + ".png";
+
+    return "https://s3.amazonaws.com/draftwithme/heroes/no_hero.png";
+}
+
+
+function get_url_for_card_bar(card_id)
+{
+    return "https://s3.amazonaws.com/draftwithme/bar_cards/" + card_id + ".png"
+}
+
+function get_url_for_mana(mana)
+{
+    if ((mana >= 0 && mana <= 11) || (mana === 12) || (mana === 25))
+        return "https://s3.amazonaws.com/draftwithme/mana/" + mana + ".png";
+
+    return "https://s3.amazonaws.com/draftwithme/mana/blank_mana.png"
+}
+
+function get_url_for_multiplicity(multiplicity)
+{
+    if (multiplicity > 0 && multiplicity <= 9)
+        return "https://s3.amazonaws.com/draftwithme/multiplicity/" + multiplicity + ".png";
+
+    return "https://s3.amazonaws.com/draftwithme/multiplicity/blank_mult.png"
 }
